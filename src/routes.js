@@ -1,10 +1,8 @@
 const express = require("express")
+const { listCompanies, findCompany } = require("./controllers/companies")
 const routes = express()
 
-routes.get("/", (req, res) => {
-    return res.status(200).json({
-        message: "Tudo okei"
-    })
-})
+routes.get("/companies", listCompanies)
+routes.get("/companies/:company_id", findCompany)
 
 module.exports = routes
