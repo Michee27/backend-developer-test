@@ -1,28 +1,117 @@
 # Backend Developer Technical Assessment
 
-## Welcome!
-
-We're excited to have you participate in our Backend Developer technical assessment. This test is designed to gauge your expertise in backend development, with a focus on architectural and organizational skills. Below, you'll find comprehensive instructions to set up and complete the project. Remember, completing every step is not mandatory; some are optional but can enhance your application.
 
 ## Assessment Overview
 
-Your task is to develop a NodeJS API for a job posting management application. Analyze the application details and use cases, and translate them into functional endpoints.
+It is with great pleasure and happiness that I submit my challenge, done with a lot of dedication and commitment. A NodeJS API was developed for a job posting management application. Analyzing application details and use cases and converting them into functional endpoints.
 
-### Application Components
+## Source code
 
-Your solution should incorporate the following components and libraries:
+![alt text](image.png)
 
-1. **Relational Database**: Utilize a SQL database (PostgreSQL 16) with two tables (`companies` and `jobs`). The DDL script in the `ddl` folder of this repository initializes these tables. The `companies` table is pre-populated with fictitious records, which you should not modify. Focus on managing records in the `jobs` table. You don't need to worry about setting up the database, consider the database is already running in the cloud. Your code only needs to handle database connections. To test your solution, use your own database running locally or in the server of your choice.
+`src`: The base folder, contains all the project development scripts
 
-2. **REST API**: Develop using NodeJS (version 20) and ExpressJS. This API will manage the use cases described below.
+`index.js`: The Express server entry point.
 
-3. **Serverless Environment**: Implement asynchronous, event-driven logic using AWS Lambda and AWS SQS for queue management.
+`routes.js`: Defines the API routes and their controllers.
 
-4. **Job Feed Repository**: Integrate a job feed with AWS S3. This feed should periodically update a JSON file reflecting the latest job postings.
+`middlers`: Contains the validation file, where some job validations are performed
+   
+`controllers`: where the main endpoints are located and perform tasks coming from my routes
+   
+ `config`: Folder reserved for configuring my variables, my connection to the database.
+ 
+`dll`: storage of the database creation code and its tables.
 
-### User Actions
+`.env` contains my environment variables, it must be configured using the example below so that it works perfectly
 
-Convert the following use cases into API endpoints:
+        - Server port
+        PORT=
+        
+        - Connection with database
+        DB_HOST=
+        DB_USER=
+        DB_PORT=
+        DB_PASS=
+        DB_NAME=
+
+        - Connection with bucket
+        KEY_ID=
+        APP_KEY=
+        BUCKET_NAME=
+        ENDPOINT_BACKBLAZE=
+
+        KEY_NAME=
+
+
+## Technologies used
+
+### - JavaScript  and Node.js
+[![Javascript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
+[![Node.js](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+
+## Dependencies:
+
+### express.js: 
+Used to create web applications and APIs in Node.js. It is widely used to create web servers and simplify web development in Node.js. Run the following command to install: 
+```javascript
+npm install express
+```
+
+### nodemon: 
+A development tool that monitors changes to files in the project directory and automatically restarts the server whenever there is a change. Packages used only during development. Run the following command to install: 
+```javascript 
+npm install -D nodemon
+```
+
+### dotenv:
+Used for managing environment variables in the application. Run the following command: 
+```javascript
+npm install dotenv
+```
+
+
+### knex:
+SQL query builder for Node.js which is used to interact with relational databases. Run the following command to install: 
+```javascript
+npm install knex
+```
+
+### pg: 
+PostgreSQL client for Node.js. ecosystem, providing an interface applications to communicate with a PostgreSQL database. Run the following command to install: 
+```javascript
+npm install pg
+```
+
+### aws-sdk:
+Simplifies the use of AWS Services by providing a set of consistent libraries and supports API lifecycle considerations such as credential management, retries, data marshaling, and serialization
+```javascript
+npm install aws-sdk
+```
+
+## Important
+Some important points.
+
+1. To develop the API and store my data, I used my local database, which means that if you are testing with a remote database, you may need SSL authentication, so you need to uncomment line 11 of the file `src/config/connection.js`
+
+2. For practical and free use purposes, I chose to use the backblaze platform to create my bucket, which also supports AWS
+
+## How to test
+
+1. Clone the repository to your local machine
+
+- [ ] Fork this repository to your GitHub
+- [ ] Clone the project on your machine
+- [ ] Once cloned on your machine, install the dependencies mentioned above and start the server using:
+```javascript
+npm run dev
+```
+
+
+2. To test this project, you will need to use software to generate HTTP requests. I used insomnia to carry out these tests.
+
+
+### Endpoint Actions
 
 - `GET /companies`: List existing companies.
 - `GET /companies/:company_id`: Fetch a specific company by ID.
@@ -31,50 +120,17 @@ Convert the following use cases into API endpoints:
 - `PUT /job/:job_id`: Edit a job posting draft (title, location, description).
 - `DELETE /job/:job_id`: Delete a job posting draft.
 - `PUT /job/:job_id/archive`: Archive an active job posting.
+- `GET/feed`: endpoint to serve a job feed.
 
-### Integration Features
 
-- Implement a `GET /feed` endpoint to serve a job feed in JSON format, containing published jobs (column `status = 'published'`). Use a caching mechanism to handle high traffic, fetching data from an S3 file updated periodically by an AWS Lambda function. The feed should return the job ID, title, description, company name and the date when the job was created. This endpoint should not query the database, the content must be fetched from S3.
-- This endpoint receives a massive number of requests every minute, so the strategy here is to implement a simple cache mechanism that will fetch a previously stored JSON file containing the published jobs and serve the content in the API. You need to implement a serverless component using AWS Lambda, that will periodically query the published jobs and store the content on S3. The `GET /feed` endpoint should fetch the S3 file and serve the content. You don't need to worry about implementing the schedule, assume it is already created using AWS EventBridge. You only need to create the Lambda component, using NodeJS 20 as a runtime.
+## Bonus Questions
 
-### Extra Feature (Optional)
+1. One of the possible scalability solutions for the task moderation feature under high load conditions could be to distribute the workload across multiple instances of the serverless moderation component. This can be done by using load balancers to direct requests to different component instances. This way, you can scale horizontally by adding more instances as needed to handle increased traffic.
 
-- **Job Moderation**: using artificial intelligence, we need to moderate the job content before allowing it to be published, to check for potential harmful content.
-Every time a user requests a job publication (`PUT /job/:job_id/publish`), the API should reply with success to the user, but the job should not be immediately published. It should be queued using AWS SQS, feeding the job to a Lambda component.
-Using OpenAI's free moderation API, create a Lambda component that will evaluate the job title and description, and test for hamrful content. If the content passes the evaluation, the component should change the job status to `published`, otherwise change to `rejected` and add the response from OpenAI API to the `notes` column.
+2. To deliver the jobs feed globally with sub-millisecond latency, you might consider deploying the application across multiple AWS regions to ensure it is close to users around the world. This allows users to connect to the nearest data center, reducing latency. Use services like Amazon Route 53 for geographic routing and Amazon DynamoDB Global Tables for cross-region data replication.
 
-### Bonus Questions
+## Contact
+I am available to clarify any doubts
 
-1. Discuss scalability solutions for the job moderation feature under high load conditions. Consider that over time the system usage grows significantly, to the point where we will have thousands of jobs published every hour. Consider the API will be able to handle the requests, but the serverless component will be overwhelmed with requests to moderate the jobs. This will affect the database connections and calls to the OpenAI API. How would you handle those issues and what solutions would you implement to mitigate the issues?
-2. Propose a strategy for delivering the job feed globally with sub-millisecond latency. Consider now that we need to provide a low latency endpoint that can serve the job feed content worldwide. Using AWS as a cloud provider, what technologies would you need to use to implement this feature and how would you do it?
-
-## Instructions
-
-1. Fork this repository and create a branch named after yourself.
-2. Develop the solution in your branch.
-3. Use your AWS account or other environment of your choice to test and validate your solution.
-4. Update the README with setup and execution instructions.
-5. Complete your test by sending a message through the Plooral platform with your repository link and branch name.
-
-## Evaluation Criteria
-
-We will assess:
-
-- Knowledge of JavaScript, Node.js, Express.js.
-- Proficiency with serverless components (Lambda, SQS).
-- Application structure and layering.
-- Effective use of environment variables.
-- Implementation of unit tests, logging, and error handling.
-- Documentation quality and code readability.
-- Commit history and overall code organization.
-
-Good luck, and we're looking forward to seeing your innovative solutions!
-Implementation of the user actions and integration features is considered mandatory for the assessment. The extra feature and the bonus questions are optional, but we encourage you to complete them as well, it will give you an additional edge over other candidates.
-
-## A Note on the Use of AI Tools
-
-In today's evolving tech landscape, AI tools such as ChatGPT and GitHub Copilot have become valuable resources for developers. We recognize the potential of these tools in aiding problem-solving and coding. While we do not prohibit the use of AI in this assessment, we encourage you to primarily showcase your own creativity and problem-solving skills. Your ability to think critically and design solutions is what we're most interested in.
-
-That said, if you do choose to utilize AI tools, we would appreciate it if you could share details about this in your submission. Include the prompts you used, how you interacted with the AI, and how it influenced your development process. This will give us additional insight into your approach to leveraging such technologies effectively.
-
-Remember, this assessment is not just about getting to the solution, but also about demonstrating your skills, creativity, and how you navigate and integrate the use of emerging technologies in your work.
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/micheecelestin/)
+[![whatsaap](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/5547997768422)

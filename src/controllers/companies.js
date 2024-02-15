@@ -18,7 +18,7 @@ const findCompany = async (req, res) => {
     try {
         const company = await knex("companies").where("id", company_id)
 
-        return res.status(200).json(company)
+        return res.status(200).json(company[0])
     } catch (error) {
         console.log(error)
         return res.status(500).json({
